@@ -65,11 +65,11 @@
 
 /* --- 팝업 오버레이 및 하단바 스타일 --- */
 .popup-overlay {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  bottom: 64px; /* 하단 네비게이션 바 높이만큼 남김 */
+  bottom: 64px;
   z-index: 900;
 
   display: flex;
@@ -83,26 +83,27 @@
 /* 2. 하단 팝업 카세트 */
 
 .popup-bar {
-  width: 100%;
-  max-width: 393px; /* 모바일 기준 폭 제한 */
-  height: 82.4vh;
-  max-height: 702px; /* 모바일 기준 높이 제한 */
+  position: relative;
+  bottom: 30px;
 
-  background-color: #ffffff;
+  width: 100%;
+  height: calc(82.4vh - 30px);
+
+  background: rgba(179, 163, 139, 0.8);
   padding: 33px 72px 127px 72px;
   box-sizing: border-box;
 
-  /* 아래에서 위로 올라오는 애니메이션 */
+  border-radius: 20px;
+
+  /* 애니메이션 */
   animation: slideUp 0.3s ease-out forwards;
 
-  border-radius: 20px 20px 0 0;
-  background: rgba(179, 163, 139, 0.8);
-
-  /* margin-bottom: 64px; */
-
+  /* Flex 정렬 */
   display: flex;
   flex-direction: column;
   align-items: center;
+
+  /*  */
 }
 
 /* 상단 드래그 손잡이 */
@@ -158,8 +159,7 @@
   font-weight: bold;
   cursor: pointer;
 
-  /* height: 59px; */
-  height: 100px;
+  height: 59px;
   width: 100%;
 
   font-family: Inter, sans-serif;

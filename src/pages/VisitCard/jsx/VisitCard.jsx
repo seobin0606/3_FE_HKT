@@ -46,15 +46,11 @@ function VisitCard() {
   };
 
   const goToNextStep = () => {
-    setCurrentStep((previousStep) =>
-      Math.min(previousStep + 1, 4)
-    );
+    setCurrentStep((previousStep) => Math.min(previousStep + 1, 4));
   };
 
   const goToPreviousStep = () => {
-    setCurrentStep((previousStep) =>
-      Math.max(previousStep - 1, 1)
-    );
+    setCurrentStep((previousStep) => Math.max(previousStep - 1, 1));
   };
 
   /* =========================
@@ -68,7 +64,7 @@ function VisitCard() {
 
     localStorage.setItem(
       VISIT_CARD_STORAGE_KEY,
-      JSON.stringify(completedVisitCardData)
+      JSON.stringify(completedVisitCardData),
     );
 
     navigate("/visit-card-result", {

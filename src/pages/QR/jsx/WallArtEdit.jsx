@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Rnd } from "react-rnd";
 
@@ -23,46 +23,70 @@ function WallArtEdit() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const state = location.state || {};
+
   const [artText, setArtText] = useState(
-    location.state?.artText || "A Story Worth Carrying.",
+    state.artText || "A Story Worth Carrying.",
   );
-  const [artLayout, setArtLayout] = useState(
-    location.state?.artLayout || defaultLayout,
-  );
-  const [artStyle, setArtStyle] = useState(
-    location.state?.artStyle || defaultStyle,
-  );
+  const [artLayout, setArtLayout] = useState(state.artLayout || defaultLayout);
+  const [artStyle, setArtStyle] = useState(state.artStyle || defaultStyle);
   const [backgroundImage, setBackgroundImage] = useState(
-    location.state?.backgroundImage ||
-      location.state?.backgroundImageUrl ||
-      location.state?.imageUrl ||
+    state.backgroundImage ||
+      state.backgroundImageUrl ||
+      state.imageUrl ||
       backgroundExample,
   );
   const [selected, setSelected] = useState(true);
 
+  // 💡 배경 가로 드래그를 위한 상태 및 Ref
+  const [bgPositionX, setBgPositionX] = useState(state.bgPositionX || 50); // % 단위
+  const isDraggingBg = useRef(false);
+  const startX = useRef(0);
+  const startBgX = useRef(50);
+
   useEffect(() => {
-    if (location.state?.artText) {
-      setArtText(location.state.artText);
-    }
+    if (state.artText) setArtText(state.artText);
+    if (state.artLayout) setArtLayout(state.artLayout);
+    if (state.artStyle) setArtStyle(state.artStyle);
 
-    if (location.state?.artLayout) {
-      setArtLayout(location.state.artLayout);
-    }
+    const nextBg =
+      state.backgroundImage || state.backgroundImageUrl || state.imageUrl;
 
-    if (location.state?.artStyle) {
-      setArtStyle(location.state.artStyle);
-    }
+    if (nextBg) setBackgroundImage(nextBg);
+    if (state.bgPositionX !== undefined) setBgPositionX(state.bgPositionX);
+  }, [
+    state.artText,
+    state.artLayout,
+    state.artStyle,
+    state.backgroundImage,
+    state.backgroundImageUrl,
+    state.imageUrl,
+    state.bgPositionX,
+  ]);
 
-    const nextBackgroundImage =
-      location.state?.backgroundImage ||
-      location.state?.backgroundImageUrl ||
-      location.state?.imageUrl ||
-      backgroundExample;
+  // 💡 배경 가로 드래그 마우스/터치 이벤트 핸들러
+  const handleMouseDown = (e) => {
+    setSelected(false);
+    isDraggingBg.current = true;
+    startX.current = e.clientX || (e.touches && e.touches[0].clientX) || 0;
+    startBgX.current = bgPositionX;
+  };
 
-    if (nextBackgroundImage) {
-      setBackgroundImage(nextBackgroundImage);
-    }
-  }, [location.state]);
+  const handleMouseMove = (e) => {
+    if (!isDraggingBg.current) return;
+    const currentX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
+    const deltaX = currentX - startX.current;
+
+    // 감도 조절 (픽셀 이동량을 %로 변환, 민감하면 0.1을 조절하세요)
+    let newBgX = startBgX.current - deltaX * 0.1;
+    newBgX = Math.max(0, Math.min(100, newBgX)); // 0% ~ 100% 범위 제한
+
+    setBgPositionX(newBgX);
+  };
+
+  const handleMouseUp = () => {
+    isDraggingBg.current = false;
+  };
 
   const handleTextEdit = () => {
     navigate("/wall-art/edit/text", {
@@ -72,6 +96,7 @@ function WallArtEdit() {
         artLayout,
         artStyle,
         backgroundImage,
+        bgPositionX,
       },
     });
   };
@@ -83,6 +108,7 @@ function WallArtEdit() {
         artLayout,
         artStyle,
         backgroundImage,
+        bgPositionX,
       },
     });
   };
@@ -90,14 +116,20 @@ function WallArtEdit() {
   return (
     <div
       className="WallArtEdit-page"
-      onClick={() => setSelected(false)} // 빈 배경 클릭 시 핸들/테두리 선택 해제
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onTouchStart={handleMouseDown}
+      onTouchMove={handleMouseMove}
+      onTouchEnd={handleMouseUp}
       style={
         backgroundImage
           ? {
               backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.15)), url(${backgroundImage})`,
               backgroundSize: "cover",
-              backgroundPosition: "center",
+              backgroundPosition: `${bgPositionX}% center`, // 💡 가로 위치 반영
               backgroundRepeat: "no-repeat",
+              cursor: "grab",
             }
           : undefined
       }
@@ -112,7 +144,7 @@ function WallArtEdit() {
           size={{ width: artLayout.width, height: artLayout.height }}
           position={{ x: artLayout.x, y: artLayout.y }}
           onMouseDown={(e) => {
-            e.stopPropagation(); // 배경 클릭 이벤트로 전파 방지
+            e.stopPropagation(); // 텍스트 클릭 시 배경 드래그 막기
             setSelected(true);
           }}
           onDragStart={(e) => {
@@ -150,7 +182,6 @@ function WallArtEdit() {
             bottomLeft: true,
             topLeft: true,
           }}
-          /* 💡 선택되었을 때만 모서리 조작점(핸들) CSS 클래스를 붙여줍니다 */
           resizeHandleClasses={
             selected
               ? {
@@ -175,6 +206,7 @@ function WallArtEdit() {
               alignItems: "center",
               justifyContent: "flex-start",
               cursor: "move",
+              userSelect: "none",
             }}
           >
             <p
@@ -197,24 +229,16 @@ function WallArtEdit() {
         {/* 하단 버튼 영역 */}
         <div
           className="WallArtEdit-btn-group"
-          onClick={(e) => e.stopPropagation()} // 버튼 클릭 시 선택 해제 방지
+          onMouseDown={(e) => e.stopPropagation()} // 버튼 영역 클릭 시 배경 드래그 막기
+          onTouchStart={(e) => e.stopPropagation()}
         >
-          <div className="WallArtEdit-action-row">
-            <button
-              type="button"
-              className="WallArtEdit-save-btn white-btn"
-              onClick={handleTextEdit}
-            >
-              문구 변경
-            </button>
-            <button
-              type="button"
-              className="WallArtEdit-cancel-btn brown-btn"
-              onClick={() => navigate("/wall-art/add-product")}
-            >
-              제품 추가
-            </button>
-          </div>
+          <button
+            type="button"
+            className="WallArtEdit-save-btn white-btn"
+            onClick={handleTextEdit}
+          >
+            문구 변경
+          </button>
 
           <button
             type="button"

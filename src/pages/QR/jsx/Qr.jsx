@@ -5,6 +5,38 @@ import "../css/QR.css";
 import BackBtn from "../../../components/jsx/BackBtn";
 import BottomNav from "../../../components/jsx/BottomNav";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+
+const STORE_ID_MAP = {
+  "MCM 신세계 강남점": 1,
+  "MCM 롯데 본점": 2,
+  "MCM 현대 판교점": 3,
+  "MCM 신세계 센텀시티점": 4,
+  "MCM 대구 신세계점": 5,
+  "MCM 신세계본점": 1,
+  "MCM HAUS": 2,
+};
+
+const getStoreIdFromSavedVisitCard = () => {
+  try {
+    const raw = localStorage.getItem("wtw-visit-card");
+    if (!raw) return 5;
+
+    const savedData = JSON.parse(raw);
+    const selectedStoreName = savedData?.store;
+
+    if (!selectedStoreName) return 5;
+
+    return STORE_ID_MAP[selectedStoreName] ?? 5;
+  } catch (error) {
+    console.warn(
+      "저장된 방문카드 데이터를 읽지 못해 기본 storeId=5를 사용합니다.",
+      error,
+    );
+    return 5;
+  }
+};
+
 function QR() {
   const navigate = useNavigate();
 
@@ -12,6 +44,51 @@ function QR() {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const openPopup = () => setIsPopupOpen(true);
   const closePopup = () => setIsPopupOpen(false);
+
+  const handleStoreModeActivate = async () => {
+    const visitCardId = Number(localStorage.getItem("visitCardId"));
+    const accessToken = localStorage.getItem("accessToken");
+
+    if (!visitCardId) {
+      alert("Visit Card ID가 없습니다. 먼저 Visit Card를 생성해주세요.");
+      return;
+    }
+
+    const storeId = getStoreIdFromSavedVisitCard();
+
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/store-mode/${visitCardId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(accessToken && {
+              Authorization: `Bearer ${accessToken}`,
+            }),
+          },
+          body: JSON.stringify({ storeId }),
+        },
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("매장 모드 활성화 실패:", {
+          status: response.status,
+          payload: { storeId },
+          response: errorText,
+        });
+        throw new Error(`매장 모드 활성화 실패: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log("매장 모드 활성화 완료:", result);
+      navigate("/screen-sharing");
+    } catch (error) {
+      console.error("매장 모드 활성화 중 오류:", error);
+      alert(error.message || "매장 모드 활성화에 실패했습니다.");
+    }
+  };
 
   return (
     <div className="QR-page">
@@ -50,7 +127,7 @@ function QR() {
                 <button
                   type="button"
                   className="popup-confirm-btn"
-                  onClick={() => navigate("/screen-sharing")} // 팝업 내 확인 버튼 눌렀을 때 페이지 이동
+                  onClick={handleStoreModeActivate}
                 >
                   동의합니다
                 </button>

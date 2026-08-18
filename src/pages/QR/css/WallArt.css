@@ -30,7 +30,6 @@
   overflow: auto;
   overscroll-behavior: none;
 
-  /* 하단 네비게이션 바(64px)에 내용이 가려지지 않도록 공간 확보 */
   padding-bottom: 62px;
   box-sizing: border-box;
   overflow-y: auto;
@@ -55,13 +54,14 @@
   justify-content: center;
   width: 100%;
   margin-top: auto;
-  padding: 0 18px 18px;
+  /* padding: 0 18px 18px; */
 }
 
 .WallArt-edit-btn {
-  width: 100%;
-  max-width: 313px;
-  height: 60px;
+  /* width: 100%;
+  max-width: 313px; */
+  width: 250px;
+  height: 59px;
   padding: 12px;
   border-radius: 15px;
   border: none;

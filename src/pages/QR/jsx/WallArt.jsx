@@ -5,6 +5,9 @@ import html2canvas from "html2canvas";
 import "../css/WallArt.css";
 import BackBtn from "../../../components/jsx/BackBtn";
 import backgroundExample from "../../../assets/images/background_example.png";
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+
 function WallArt() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -25,10 +28,10 @@ function WallArt() {
     fontWeight: 400,
     fontSize: 36,
   });
+  const [bgPositionX, setBgPositionX] = useState(
+    location.state?.bgPositionX ?? 50,
+  );
   const [isEdited, setIsEdited] = useState(false);
-
-  // 아카이빙 버튼 클릭 여부 상태
-  const [isArchiving, setIsArchiving] = useState(false);
 
   // 💡 알림 메시지 상태 관리 (공유 알림 / 저장 알림)
   const [shareAlert, setShareAlert] = useState(false);
@@ -39,6 +42,52 @@ function WallArt() {
       location.state?.imageUrl ||
       backgroundExample,
   );
+
+  useEffect(() => {
+    const fetchWallArt = async () => {
+      const accessToken = localStorage.getItem("accessToken");
+
+      if (!accessToken) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/wall-art`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("월아트 조회 실패:", response.status, errorText);
+          return;
+        }
+
+        const data = await response.json();
+
+        if (data.wallartId) {
+          localStorage.setItem("wallartId", String(data.wallartId));
+        }
+
+        if (data.wallartText) {
+          setDisplayText(data.wallartText);
+        }
+
+        if (data.wallartImg) {
+          const imageUrl = data.wallartImg.startsWith("http")
+            ? data.wallartImg
+            : `${API_BASE_URL}/${data.wallartImg.replace(/^\/+/, "")}`;
+          setBackgroundImage(imageUrl);
+        }
+      } catch (error) {
+        console.error("월아트 조회 중 오류:", error);
+      }
+    };
+
+    fetchWallArt();
+  }, []);
 
   useEffect(() => {
     if (location.state?.updatedText) {
@@ -63,6 +112,10 @@ function WallArt() {
     if (nextBackgroundImage) {
       setBackgroundImage(nextBackgroundImage);
     }
+
+    if (location.state?.bgPositionX !== undefined) {
+      setBgPositionX(location.state.bgPositionX);
+    }
   }, [location.state]);
 
   const handleOpenEditor = () => {
@@ -72,6 +125,7 @@ function WallArt() {
         artLayout,
         artStyle,
         backgroundImage,
+        bgPositionX,
       },
     });
   };
@@ -153,7 +207,7 @@ function WallArt() {
           ? {
               backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.15)), url(${backgroundImage})`,
               backgroundSize: "cover",
-              backgroundPosition: "center",
+              backgroundPosition: `${bgPositionX}% center`,
               backgroundRepeat: "no-repeat",
             }
           : undefined
@@ -191,8 +245,8 @@ function WallArt() {
 
         {/* 하단 버튼 영역 */}
         <div className="WallArt-btn-group">
-          {isArchiving ? (
-            /* 1. 아카이빙 모드: [이미지 저장], [공유하기] 버튼 */
+          {isEdited ? (
+            /* 1. 수정 후: [이미지 저장], [공유하기] 버튼 */
             <div className="archiving-btn-wrapper">
               {/* 토스트 알림 메시지 영역 */}
               {saveAlert && (
@@ -207,7 +261,7 @@ function WallArt() {
               )}
               <button
                 type="button"
-                className="WallArt-edit-btn whtie-btn"
+                className="WallArt-edit-btn white-btn"
                 onClick={handleSaveImage}
               >
                 이미지 저장
@@ -220,17 +274,8 @@ function WallArt() {
                 공유하기
               </button>
             </div>
-          ) : isEdited ? (
-            /* 2. 수정 후: [아카이빙하기] 버튼 */
-            <button
-              type="button"
-              className="WallArt-edit-btn yellow-btn"
-              onClick={() => setIsArchiving(true)}
-            >
-              아카이빙하기
-            </button>
           ) : (
-            /* 3. 처음 진입 시: [수정하기] 버튼 */
+            /* 2. 처음 진입 시: [수정하기] 버튼 */
             <button
               type="button"
               className="WallArt-edit-btn yellow-btn"
@@ -239,6 +284,7 @@ function WallArt() {
               수정하기
             </button>
           )}
+
           {/* 백엔드 연결시 삭제!! */}
           <button type="button" onClick={() => navigate("/wall-art/end")}>
             임시 종료
