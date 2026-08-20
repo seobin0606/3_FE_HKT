@@ -490,26 +490,6 @@
   cursor: not-allowed;
 }
 
-.visit-time-undecided {
-  margin-top: 10px;
-  padding: 9px 15px;
-
-  border: 1px solid #956718;
-  border-radius: 999px;
-  background-color: #fffaf4;
-
-  color: #754b00;
-  font-size: 13px;
-  font-weight: 700;
-
-  cursor: pointer;
-}
-
-.visit-time-undecided.is-selected {
-  background-color: #805500;
-  color: #fff;
-}
-
 .visit-input-guide {
   margin: 8px 0 0;
 
@@ -837,4 +817,11 @@
 
 .location-consent-actions .is-allow {
   background-color: #805500;
+}
+.visit-submit-error {
+  margin: 10px 0 0;
+  color: #c62828;
+  font-size: 14px;
+  line-height: 1.4;
+  text-align: center;
 }

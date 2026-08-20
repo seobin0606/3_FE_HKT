@@ -5,7 +5,7 @@ import "../css/qr.css";
 import BackBtn from "../../../components/jsx/BackBtn";
 import BottomNav from "../../../components/jsx/BottomNav";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 
 const STORE_ID_MAP = {
   "MCM 신세계 강남점": 1,

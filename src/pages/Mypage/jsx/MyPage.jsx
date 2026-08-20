@@ -27,8 +27,7 @@ import shareIcon from "../../../assets/images/share.svg";
 ========================= */
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_URL ||
-  "http://localhost:8080";
+  import.meta.env.VITE_API_URL || "";
 
 
 /* =========================
@@ -590,12 +589,8 @@ function MyPage() {
     formatVisitTime(
       visitCardDetail?.visitTime
     ) ||
-    (
-      visitCardData.visitTimeUndecided
-        ? "정해지지 않음"
-        : visitCardData.visitTime ||
-          "15:00"
-    );
+    visitCardData.visitTime ||
+    "15:00";
 
 
   /* =========================

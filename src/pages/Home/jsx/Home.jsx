@@ -16,8 +16,14 @@ import "../css/Home.css";
 
 import BottomNav from "../../../components/jsx/BottomNav";
 
-import starIcon from "../../../assets/images/star.svg";
-import emptyStarIcon from "../../../assets/images/emptystar.svg";
+import VisitCardResult
+  from "../../VisitCard/jsx/VisitCardResult.jsx";
+
+import starIcon
+  from "../../../assets/images/star.svg";
+
+import emptyStarIcon
+  from "../../../assets/images/emptystar.svg";
 
 
 /* =========================
@@ -25,8 +31,7 @@ import emptyStarIcon from "../../../assets/images/emptystar.svg";
 ========================= */
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_URL ||
-  "http://localhost:8080";
+  import.meta.env.VITE_API_URL || "";
 
 
 function Home() {
@@ -34,17 +39,39 @@ function Home() {
 
 
   /* =========================
+     VISIT CARD ID
+
+     Visit Card 생성 후에는
+     localStorage에 저장된 ID 사용
+  ========================= */
+
+  const visitCardId =
+    localStorage.getItem(
+      "visitCardId"
+    );
+
+
+  /* =========================
      STATE
   ========================= */
 
-  const [userName, setUserName] =
-    useState("");
+  const [
+    userName,
+    setUserName,
+  ] = useState("");
 
-  const [bestProducts, setBestProducts] =
-    useState([]);
 
-  const [isLoading, setIsLoading] =
-    useState(true);
+  const [
+    bestProducts,
+    setBestProducts,
+  ] = useState([]);
+
+
+  const [
+    isLoading,
+    setIsLoading,
+  ] = useState(true);
+
 
   const [
     updatingProductId,
@@ -62,6 +89,7 @@ function Home() {
         "accessToken"
       );
 
+
     return {
       "Content-Type":
         "application/json",
@@ -77,12 +105,31 @@ function Home() {
   /* =========================
      HOME API 조회
 
+     Visit Card가 없을 때만
+     기존 Home 데이터 조회
+
      GET /api/users/me
      GET /api/products/best
      GET /api/users/wishlist
   ========================= */
 
   useEffect(() => {
+
+    /*
+      이미 Visit Card를 생성했다면
+      아래 Home API는 불필요함.
+
+      VisitCardResult가 자체적으로
+      필요한 API를 호출함.
+    */
+
+    if (visitCardId) {
+      setIsLoading(false);
+
+      return;
+    }
+
+
     const fetchHomeData =
       async () => {
 
@@ -96,6 +143,9 @@ function Home() {
             wishlistResponse,
           ] =
             await Promise.all([
+
+              /* 사용자 */
+
               fetch(
                 `${API_BASE_URL}/api/users/me`,
                 {
@@ -104,6 +154,9 @@ function Home() {
                     getHeaders(),
                 }
               ),
+
+
+              /* 베스트 상품 */
 
               fetch(
                 `${API_BASE_URL}/api/products/best`,
@@ -114,6 +167,9 @@ function Home() {
                 }
               ),
 
+
+              /* 위시리스트 */
+
               fetch(
                 `${API_BASE_URL}/api/users/wishlist`,
                 {
@@ -122,6 +178,7 @@ function Home() {
                     getHeaders(),
                 }
               ),
+
             ]);
 
 
@@ -130,24 +187,28 @@ function Home() {
           ========================= */
 
           if (userResponse.ok) {
+
             const userData =
               await userResponse.json();
+
 
             console.log(
               "사용자 API 응답:",
               userData
             );
 
+
             setUserName(
-              userData.userName ||
-              ""
+              userData.userName || ""
             );
 
           } else {
+
             console.error(
               "사용자 조회 실패:",
               userResponse.status
             );
+
           }
 
 
@@ -163,8 +224,10 @@ function Home() {
           if (
             wishlistResponse.ok
           ) {
+
             wishlistData =
               await wishlistResponse.json();
+
 
             console.log(
               "위시리스트 응답:",
@@ -172,10 +235,12 @@ function Home() {
             );
 
           } else {
+
             console.error(
               "위시리스트 조회 실패:",
               wishlistResponse.status
             );
+
           }
 
 
@@ -203,8 +268,10 @@ function Home() {
           ========================= */
 
           if (bestResponse.ok) {
+
             const bestData =
               await bestResponse.json();
+
 
             console.log(
               "베스트 상품 응답:",
@@ -213,7 +280,7 @@ function Home() {
 
 
             /*
-              응답이
+              API 응답이
 
               [
                 {...}
@@ -234,10 +301,12 @@ function Home() {
               )
                 ? bestData
                 : Array.isArray(
-                    bestData.productList
+                    bestData.bestProductList
                   )
-                  ? bestData.productList
-                  : [];
+                  ? bestData.bestProductList
+                  : Array.isArray(bestData.productList)
+                    ? bestData.productList
+                    : [];
 
 
             const formattedProducts =
@@ -260,27 +329,33 @@ function Home() {
             );
 
           } else {
+
             console.error(
               "베스트 상품 조회 실패:",
               bestResponse.status
             );
+
           }
 
+
         } catch (error) {
+
           console.error(
             "Home API 오류:",
             error
           );
 
         } finally {
+
           setIsLoading(false);
+
         }
       };
 
 
     fetchHomeData();
 
-  }, []);
+  }, [visitCardId]);
 
 
   /* =========================
@@ -288,9 +363,11 @@ function Home() {
   ========================= */
 
   const handleVisitCard = () => {
+
     navigate(
       "/visit-card"
     );
+
   };
 
 
@@ -306,6 +383,7 @@ function Home() {
           `${API_BASE_URL}/api/users/wishlist/${productId}`,
           {
             method: "POST",
+
             headers:
               getHeaders(),
           }
@@ -313,12 +391,15 @@ function Home() {
 
 
       if (!response.ok) {
+
         if (
           response.status === 409
         ) {
+
           throw new Error(
             "이미 위시리스트에 등록된 상품입니다."
           );
+
         }
 
 
@@ -341,6 +422,7 @@ function Home() {
           `${API_BASE_URL}/api/users/wishlist/${productId}`,
           {
             method: "DELETE",
+
             headers:
               getHeaders(),
           }
@@ -348,9 +430,11 @@ function Home() {
 
 
       if (!response.ok) {
+
         throw new Error(
           `위시 삭제 실패: ${response.status}`
         );
+
       }
     };
 
@@ -388,6 +472,7 @@ function Home() {
 
 
       try {
+
         setUpdatingProductId(
           productId
         );
@@ -398,13 +483,17 @@ function Home() {
 
 
         if (nextLiked) {
+
           await addWishlist(
             productId
           );
+
         } else {
+
           await deleteWishlist(
             productId
           );
+
         }
 
 
@@ -420,6 +509,7 @@ function Home() {
                 )
                   ? {
                       ...product,
+
                       liked:
                         nextLiked,
                     }
@@ -427,7 +517,9 @@ function Home() {
             )
         );
 
+
       } catch (error) {
+
         console.error(
           "위시리스트 변경 오류:",
           error
@@ -436,18 +528,46 @@ function Home() {
 
         alert(
           error.message ||
-          "위시리스트 변경에 실패했습니다."
+            "위시리스트 변경에 실패했습니다."
         );
 
+
       } finally {
+
         setUpdatingProductId(
           null
         );
+
       }
     };
 
 
+  /* =====================================================
+     ⭐ 핵심
+
+     Visit Card가 이미 존재하면
+     Home 화면 대신 VisitCardResult 화면 표시
+
+     따라서 하단 Home 버튼으로 /home 이동해도
+     생성창이 다시 나오지 않음
+  ===================================================== */
+
+  if (visitCardId) {
+
+    return (
+      <VisitCardResult />
+    );
+
+  }
+
+
+  /* =====================================================
+     Visit Card가 없는 경우
+     기존 HOME 화면
+  ===================================================== */
+
   return (
+
     <div className="home-page">
 
       <main className="home-main">
@@ -482,6 +602,9 @@ function Home() {
 
         {/* =========================
             VISIT CARD 생성 카드
+
+            Visit Card가 없을 때만
+            이 화면이 표시됨
         ========================= */}
 
         <section className="home-visit-card">
@@ -495,9 +618,14 @@ function Home() {
 
 
           <p className="home-visit-description">
+
             오늘 찾는 제품과 목적을 입력하면
+
             <br />
-            AI가 맞춤 Visit Card를 생성해드립니다.
+
+            AI가 맞춤 Visit Card를
+            생성해드립니다.
+
           </p>
 
 
@@ -524,7 +652,12 @@ function Home() {
         </section>
 
 
-        <div className="home-divider home-divider-products" />
+        <div
+          className="
+            home-divider
+            home-divider-products
+          "
+        />
 
 
         {/* =========================
@@ -572,9 +705,11 @@ function Home() {
 
 
                     <span className="home-product-name">
+
                       {
                         product.productName
                       }
+
                     </span>
 
 

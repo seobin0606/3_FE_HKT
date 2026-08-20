@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import ManualStoreSelector from "./ManualStoreSelector";
+import { getStores } from "../../../services/visitCardApi";
 
 const MOCK_RECOMMENDED_STORES = [
   {
@@ -17,14 +18,78 @@ const MOCK_RECOMMENDED_STORES = [
   },
 ];
 
+const REGION_CATEGORY = {
+  1: {
+    region: "서울",
+    fullRegion: "서울특별시",
+  },
+  2: {
+    region: "경기",
+    fullRegion: "경기도·인천광역시",
+  },
+  3: {
+    region: "부산",
+    fullRegion: "부산광역시",
+  },
+  4: {
+    region: "대구",
+    fullRegion: "대구광역시·광주광역시",
+  },
+};
+
 function VisitCardStep4({
   visitCardData,
   updateVisitCardData,
   onPrevious,
   onComplete,
+  isSubmitting,
+  submitError,
 }) {
   const [showConsent, setShowConsent] = useState(true);
   const [screenMode, setScreenMode] = useState("recommendation");
+  const [stores, setStores] = useState(MOCK_RECOMMENDED_STORES);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchStores = async () => {
+      try {
+        const responseData = await getStores();
+        const storeList = Array.isArray(responseData)
+          ? responseData
+          : responseData?.storeList ?? responseData?.data ?? [];
+
+        if (!isMounted || !Array.isArray(storeList) || storeList.length === 0) {
+          return;
+        }
+
+        setStores(
+          storeList.map((store) => {
+            const regionInfo = REGION_CATEGORY[store.regionCategory];
+
+            return {
+              ...store,
+              id: store.storeId ?? store.id,
+              name: store.storeName ?? store.name,
+              type: store.storeType ?? store.type ?? "매장",
+              region: regionInfo?.region ?? store.region ?? "",
+              fullRegion:
+                regionInfo?.fullRegion ?? store.fullRegion ?? store.region ?? "",
+              distance: store.distance ?? "매장 위치 보기",
+            };
+          })
+        );
+      } catch (error) {
+        console.warn("매장 목록 조회 실패, 임시 목록을 사용합니다.", error);
+      }
+    };
+
+    fetchStores();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleAllowLocation = () => {
     // 와이어프레임 단계에서는 실제 위치 권한을 요청하지 않습니다.
@@ -39,6 +104,7 @@ function VisitCardStep4({
   const openManualStoreSelector = () => {
     updateVisitCardData({
       region: "",
+      storeId: null,
       store: "",
       storeType: "",
     });
@@ -47,7 +113,8 @@ function VisitCardStep4({
 
   const handleStoreSelect = (store) => {
     updateVisitCardData({
-      region: "서울특별시",
+      region: store.fullRegion || store.region || "서울특별시",
+      storeId: store.storeId ?? store.id,
       store: store.name,
       storeType: store.type,
     });
@@ -60,6 +127,9 @@ function VisitCardStep4({
         updateVisitCardData={updateVisitCardData}
         onBack={() => setScreenMode("recommendation")}
         onNext={onComplete}
+        stores={stores}
+        isSubmitting={isSubmitting}
+        submitError={submitError}
       />
     );
   }
@@ -105,7 +175,7 @@ function VisitCardStep4({
         </div>
 
         <div className="location-store-cards">
-          {MOCK_RECOMMENDED_STORES.map((store) => {
+          {stores.slice(0, 2).map((store) => {
             const isSelected = visitCardData.store === store.name;
 
             return (
@@ -137,11 +207,17 @@ function VisitCardStep4({
         <button
           type="button"
           className="visit-next-button"
-          disabled={!visitCardData.store}
+          disabled={!visitCardData.store || isSubmitting}
           onClick={onComplete}
         >
-          매장 선택하기
+          {isSubmitting ? "Visit Card 생성 중..." : "매장 선택하기"}
         </button>
+
+        {submitError && (
+          <p className="visit-submit-error" role="alert">
+            {submitError}
+          </p>
+        )}
       </section>
 
       {showConsent && (

@@ -7,9 +7,38 @@ import VisitCardStep3 from "./VisitCardStep3";
 import VisitCardStep4 from "./VisitCardStep4";
 
 import BottomNav from "../../../components/jsx/BottomNav";
+import { createVisitCard } from "../../../services/visitCardApi";
 import "../css/VisitCard.css";
 
 const VISIT_CARD_STORAGE_KEY = "wtw-visit-card";
+const VISIT_CARD_ID_STORAGE_KEY = "visitCardId";
+
+const GENDER_CATEGORY = {
+  여성: 1,
+  남성: 2,
+  기타: 3,
+};
+
+const PRODUCT_CATEGORY = {
+  백팩: 1,
+  토트백: 2,
+  지갑: 3,
+  액세서리: 4,
+};
+
+const MOOD_CATEGORY = {
+  스트리트: 1,
+  클래식: 2,
+  모던: 3,
+  볼드: 4,
+  미니멀: 5,
+};
+
+const SUPPORT_STATUS = {
+  accept: 1,
+  alone: 2,
+  "after-tour": 3,
+};
 
 const formatVisitDate = (date) => {
   const year = date.getFullYear();
@@ -19,21 +48,39 @@ const formatVisitDate = (date) => {
   return `${year}.${month}.${day}`;
 };
 
+const formatVisitTime = (time) => {
+  if (!time) {
+    return null;
+  }
+
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}T${time}:00`;
+};
+
+const getVisitCardId = (responseData) =>
+  responseData?.visitCardId ?? responseData?.data?.visitCardId ?? null;
+
 function VisitCard() {
   const navigate = useNavigate();
 
   const [currentStep, setCurrentStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   const [visitCardData, setVisitCardData] = useState({
     gender: "",
     region: "",
+    storeId: null,
     store: "",
     storeType: "",
     products: [],
     moods: [],
     shoppingPurpose: "",
     visitTime: "",
-    visitTimeUndecided: false,
     consultationType: "",
     consultationDelay: "",
   });
@@ -60,22 +107,72 @@ function VisitCard() {
   /* =========================
      Visit Card 생성 완료
   ========================= */
-  const handleVisitCardComplete = () => {
+  const handleVisitCardComplete = async () => {
+    if (isSubmitting) {
+      return;
+    }
+
     const completedVisitCardData = {
       ...visitCardData,
       visitDate: formatVisitDate(new Date()),
     };
 
-    localStorage.setItem(
-      VISIT_CARD_STORAGE_KEY,
-      JSON.stringify(completedVisitCardData)
-    );
+    try {
+      setIsSubmitting(true);
+      setSubmitError("");
 
-    navigate("/visit-card-result", {
-      state: {
-        visitCardData: completedVisitCardData,
-      },
-    });
+      if (!visitCardData.storeId) {
+        throw new Error("선택한 매장의 ID가 없습니다. 매장을 다시 선택해주세요.");
+      }
+
+      const requestBody = {
+        userId: Number(localStorage.getItem("userId")) || 1,
+        storeId: Number(visitCardData.storeId),
+        findProductCategory: visitCardData.products[0]
+          ? PRODUCT_CATEGORY[visitCardData.products[0]]
+          : null,
+        moodCategory: MOOD_CATEGORY[visitCardData.moods[0]],
+        purposeText: visitCardData.shoppingPurpose.trim(),
+        visitTime: formatVisitTime(visitCardData.visitTime),
+        supportStatus: SUPPORT_STATUS[visitCardData.consultationType],
+        gender: GENDER_CATEGORY[visitCardData.gender],
+      };
+
+      const responseData = await createVisitCard(requestBody);
+      const visitCardId = getVisitCardId(responseData);
+
+      if (!visitCardId) {
+        throw new Error("서버 응답에 Visit Card ID가 없습니다.");
+      }
+
+      const savedVisitCardData = {
+        ...completedVisitCardData,
+        ...responseData,
+        visitCardId,
+      };
+
+      localStorage.setItem(
+        VISIT_CARD_STORAGE_KEY,
+        JSON.stringify(savedVisitCardData)
+      );
+      localStorage.setItem(VISIT_CARD_ID_STORAGE_KEY, String(visitCardId));
+
+      navigate("/visit-card-result", {
+        state: {
+          visitCardId,
+          visitCardData: savedVisitCardData,
+        },
+      });
+    } catch (error) {
+      console.error("Visit Card 생성 실패:", error);
+      setSubmitError(
+        error instanceof Error
+          ? error.message
+          : "Visit Card 생성에 실패했습니다."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const renderCurrentStep = () => {
@@ -116,6 +213,8 @@ function VisitCard() {
             updateVisitCardData={updateVisitCardData}
             onPrevious={goToPreviousStep}
             onComplete={handleVisitCardComplete}
+            isSubmitting={isSubmitting}
+            submitError={submitError}
           />
         );
 

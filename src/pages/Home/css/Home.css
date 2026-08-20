@@ -374,17 +374,30 @@
 .home-product-list {
   display: flex;
   flex-direction: column;
-
   gap: 9px;
 
-  max-height: 285px;
+  /* 상품 목록 영역 높이 */
+  max-height: 360px;
 
+  /* 상품이 많아지면 이 영역에서 스크롤 */
   overflow-y: auto;
+  overflow-x: hidden;
 
   padding-right: 0;
   padding-bottom: 20px;
+
+  -webkit-overflow-scrolling: touch;
 }
 
+/* 스크롤바는 안 보이게 */
+.home-product-list::-webkit-scrollbar {
+  width: 0;
+  display: none;
+}
+
+.home-product-list {
+  scrollbar-width: none;
+}
 .home-product-card {
   display: flex;
   align-items: center;
@@ -394,6 +407,7 @@
   height: 66px;
 
   padding: 0 20px;
+  flex-shrink: 0;
 
   box-sizing: border-box;
 
@@ -416,7 +430,7 @@
 
   color: #111;
 
-  font-size: 19px;
+  font-size: 15px;
   font-weight: 500;
 }
 

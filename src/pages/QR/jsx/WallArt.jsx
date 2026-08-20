@@ -6,7 +6,7 @@ import "../css/WallArt.css";
 import BackBtn from "../../../components/jsx/BackBtn";
 import backgroundExample from "../../../assets/images/background_example.png";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "";
 
 function WallArt() {
   const navigate = useNavigate();

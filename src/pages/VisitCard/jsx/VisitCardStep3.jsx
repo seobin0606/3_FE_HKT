@@ -37,16 +37,6 @@ function VisitCardStep3({
   const handleTimeChange = (event) => {
     updateVisitCardData({
       visitTime: event.target.value,
-      visitTimeUndecided: false,
-    });
-  };
-
-  const handleUndecidedToggle = () => {
-    const nextUndecided = !visitCardData.visitTimeUndecided;
-
-    updateVisitCardData({
-      visitTime: nextUndecided ? "" : visitCardData.visitTime,
-      visitTimeUndecided: nextUndecided,
     });
   };
 
@@ -69,7 +59,7 @@ function VisitCardStep3({
   const needsDelay = visitCardData.consultationType === "after-tour";
 
   const canComplete =
-    (visitCardData.visitTime || visitCardData.visitTimeUndecided) &&
+    visitCardData.visitTime &&
     visitCardData.consultationType &&
     (!needsDelay || visitCardData.consultationDelay);
 
@@ -117,29 +107,12 @@ function VisitCardStep3({
           type="time"
           step="900"
           value={visitCardData.visitTime}
-          disabled={visitCardData.visitTimeUndecided}
-          onChange={handleTimeChange}
-          onClick={(event) => {
-            if (!visitCardData.visitTimeUndecided) {
-              event.currentTarget.showPicker?.();
-            }
-          }}
+          onInput={handleTimeChange}
         />
 
-        <button
-          type="button"
-          className={`visit-time-undecided ${
-            visitCardData.visitTimeUndecided ? "is-selected" : ""
-          }`}
-          aria-pressed={visitCardData.visitTimeUndecided}
-          onClick={handleUndecidedToggle}
-        >
-          정해지지 않음
-        </button>
-
-        {!visitCardData.visitTime && !visitCardData.visitTimeUndecided && (
+        {!visitCardData.visitTime && (
           <p className="visit-input-guide">
-            방문 시간을 선택하거나 ‘정해지지 않음’을 선택해주세요.
+            방문 시간을 선택해주세요.
           </p>
         )}
       </section>

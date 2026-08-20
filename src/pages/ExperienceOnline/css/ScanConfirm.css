@@ -1,9 +1,15 @@
+/* =========================
+   PAGE
+========================= */
+
 .scan-confirm-page {
   position: relative;
 
   width: 100%;
   max-width: 393px;
-  height: 852px;
+
+  height: 100vh;
+  height: 100dvh;
 
   margin: 0 auto;
 
@@ -12,17 +18,23 @@
   overflow: hidden;
 }
 
+
 /* =========================
    HEADER
 ========================= */
 
 .scan-confirm-header {
+  width: 100%;
   height: 64px;
+
   padding: 15px 14px;
+
+  box-sizing: border-box;
 }
 
 .scan-confirm-back {
   display: flex;
+
   align-items: center;
   justify-content: center;
 
@@ -32,6 +44,7 @@
   padding: 0;
 
   border: none;
+
   background: transparent;
 
   color: #704500;
@@ -40,9 +53,14 @@
 }
 
 .scan-confirm-back img {
+  display: block;
+
   width: 11px;
   height: 22px;
+
+  object-fit: contain;
 }
+
 
 /* =========================
    MAIN
@@ -51,22 +69,47 @@
 .scan-confirm-main {
   position: relative;
 
-  height: calc(100% - 64px - 64px);
+  width: 100%;
+
+  height: calc(100vh - 64px - 64px);
+  height: calc(100dvh - 64px - 64px);
 
   padding: 0 25px;
+
+  box-sizing: border-box;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  -webkit-overflow-scrolling: touch;
+
+  scrollbar-width: none;
 }
+
+.scan-confirm-main::-webkit-scrollbar {
+  display: none;
+}
+
+
+/* =========================
+   TITLE
+========================= */
 
 .scan-confirm-title {
   margin: 12px 0 0;
 
   color: #6f4600;
 
-  font-size: 26px;
-  font-weight: 900;
+  font-size: 24px;
+  font-weight: 800;
+
   line-height: 1.35;
 
   letter-spacing: -0.6px;
+
+  word-break: keep-all;
 }
+
 
 /* =========================
    PRODUCT CARD
@@ -75,10 +118,10 @@
 .scan-confirm-card {
   position: relative;
 
-  width: 100%;
+  width: 313px;
   height: 427px;
 
-  margin-top: 30px;
+  margin: 30px auto 0;
 
   overflow: hidden;
 
@@ -87,54 +130,116 @@
   background: #ffffff;
 }
 
+
+/* =========================
+   IMAGE AREA
+   Figma: 313 x 322
+========================= */
+
 .scan-confirm-image-area {
+  position: relative;
+
   display: flex;
+
   align-items: center;
   justify-content: center;
 
-  width: 100%;
+  width: 313px;
   height: 322px;
 
-  background: #fffdfb;
+  box-sizing: border-box;
+
+  overflow: hidden;
+
+  background: #fbf8f3;
 }
+
+
+/* 실제 상품 이미지 */
+
+.scan-confirm-image-area img {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: contain;
+  object-position: center;
+
+  background: #fbf8f3;
+}
+
+
+/* 이미지 없을 때 */
 
 .scan-confirm-image-text {
   color: #111;
 
   font-size: 17px;
   font-weight: 700;
+
+  text-align: center;
 }
+
+
+/* =========================
+   PRODUCT NAME
+   Figma: 313 x 105
+========================= */
 
 .scan-confirm-product-name {
   display: flex;
+
   align-items: center;
   justify-content: center;
 
-  width: 100%;
+  width: 313px;
   height: 105px;
 
-  background: #d79a42;
+  padding: 0 20px 0 20px;
+
+  box-sizing: border-box;
+
+  background: #d99a3d;
 
   color: #111;
 
   font-size: 17px;
   font-weight: 700;
+
+  line-height: 1.35;
+
+  text-align: center;
+
+  word-break: keep-all;
 }
 
-/* 오른쪽 장식 */
+
+/* =========================
+   VISIT ICON
+========================= */
+
 .scan-confirm-visit-icon {
   position: absolute;
 
-  right: 16px;
-  bottom: 64px;
+  right: 12px;
 
-  width: 110px;
+  /*
+    제품명 영역 상단 경계에
+    걸쳐 보이도록
+  */
+  bottom: 78px;
+
+  width: 72px;
   height: auto;
 
   object-fit: contain;
 
-  z-index: 2;
+  pointer-events: none;
+
+  z-index: 5;
 }
+
 
 /* =========================
    CONFIRM BUTTON
@@ -144,12 +249,14 @@
   position: absolute;
 
   left: 50%;
-  bottom: 90px;
+  bottom: 66px;
 
   transform: translateX(-50%);
 
   width: 190px;
   height: 50px;
+
+  padding: 0;
 
   border: none;
   border-radius: 11px;
@@ -158,27 +265,35 @@
 
   color: #1d1408;
 
-  font-size: 18px;
+  font-family: inherit;
+
+  font-size: 17px;
   font-weight: 700;
 
   cursor: pointer;
+
+  z-index: 5;
 }
 
 .scan-confirm-button:active {
-  transform: translateX(-50%) scale(0.97);
+  transform:
+    translateX(-50%)
+    scale(0.97);
 }
+
 
 /* =========================
    BOTTOM NAV
 ========================= */
 
 .scan-confirm-bottom-nav {
- position: absolute;
+  position: absolute;
 
   left: 0;
   bottom: 0;
 
   display: flex;
+
   align-items: center;
   justify-content: space-around;
 
@@ -188,10 +303,13 @@
   background-color: #eca039;
 
   border-radius: 10px 10px 0 0;
+
+  z-index: 20;
 }
 
 .scan-confirm-nav-item {
   display: flex;
+
   align-items: center;
   justify-content: center;
 
@@ -201,9 +319,47 @@
   padding: 0;
 
   border: none;
+
   background: transparent;
 
   color: #111;
 
   cursor: pointer;
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 393px) {
+  .scan-confirm-page {
+    max-width: 100%;
+  }
+
+  .scan-confirm-main {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+}
+
+
+/* =========================
+   작은 높이 휴대폰 대응
+========================= */
+
+@media (max-height: 760px) {
+  .scan-confirm-title {
+    margin-top: 6px;
+
+    font-size: 23px;
+  }
+
+  .scan-confirm-card {
+    margin-top: 20px;
+  }
+
+  .scan-confirm-button {
+    bottom: 28px;
+  }
 }

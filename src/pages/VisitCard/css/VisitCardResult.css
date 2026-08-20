@@ -7,12 +7,16 @@
 
   width: 100%;
   max-width: 393px;
-  height: 852px;
+
+  /* 모바일 실제 화면 높이 사용 */
+  height: 100vh;
+  height: 100dvh;
 
   margin: 0 auto;
 
   background: #f4eadf;
 
+  /* 바깥 페이지는 고정 */
   overflow: hidden;
 }
 
@@ -23,18 +27,41 @@
 
 .visit-result-main {
   width: 100%;
-  height: calc(852px - 64px);
 
-  padding: 34px 20px 90px;
+  /* BottomNav 영역을 제외한 높이 */
+  height: calc(100vh - 64px);
+  height: calc(100dvh - 64px);
+
+  padding: 34px 20px 140px;
 
   box-sizing: border-box;
 
+  /* 핵심: 세로 스크롤 */
   overflow-y: auto;
   overflow-x: hidden;
+
+  /* iPhone / 모바일 스크롤 부드럽게 */
+  -webkit-overflow-scrolling: touch;
+
+  /* 스크롤 영역 자체 제어 */
+  overscroll-behavior-y: contain;
+
+  /* 모바일 터치 스크롤 허용 */
+  touch-action: pan-y;
 }
 
+
+/* 스크롤바 숨기기 - Chrome / Safari */
 .visit-result-main::-webkit-scrollbar {
   width: 0;
+  height: 0;
+  display: none;
+}
+
+
+/* Firefox */
+.visit-result-main {
+  scrollbar-width: none;
 }
 
 
@@ -106,6 +133,7 @@
   position: relative;
 
   display: flex;
+
   align-items: flex-start;
   justify-content: space-between;
 
@@ -186,6 +214,7 @@
 
 .visit-result-info-row {
   display: flex;
+
   align-items: center;
 
   width: 100%;
@@ -210,8 +239,9 @@
 
   font-size: 14px;
   font-weight: 500;
-
   line-height: 1.4;
+
+  word-break: keep-all;
 }
 
 
@@ -221,6 +251,7 @@
 
 .visit-result-life {
   display: flex;
+
   align-items: center;
 
   width: 100%;
@@ -255,7 +286,9 @@
 
 .visit-result-life-route {
   display: flex;
+
   flex: 1;
+
   align-items: center;
 
   margin: 0 10px;
@@ -317,7 +350,6 @@
 
   font-size: 14px;
   font-weight: 400;
-
   line-height: 1.4;
 }
 
@@ -328,8 +360,9 @@
 
   font-size: 18px;
   font-weight: 700;
-
   line-height: 1.4;
+
+  word-break: keep-all;
 }
 
 
@@ -353,54 +386,7 @@
 }
 
 
-/* 추천 동선 전체 */
-.visit-result-route-list {
-  display: flex;
-  align-items: center;
-
-  width: 100%;
-  margin-top: 10px;
-}
-
-
-/* 박스 + 화살표 묶음 */
-.visit-result-route-item {
-  display: flex;
-  align-items: center;
-
-  height: 29px;
-
-  flex-shrink: 0;
-}
-
-
-/* 추천 동선 네모 */
-.visit-result-route-box {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  height: 29px;
-
-  padding: 0 13px;
-
-  box-sizing: border-box;
-
-  border: 1px solid #ad7f44;
-  border-radius: 8px;
-
-  background: #fffaf4;
-
-  color: #704500;
-
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 500;
-
-  white-space: nowrap;
-
-  cursor: pointer;
-}
+/* 추천 동선 설명 */
 
 .visit-result-route-description {
   margin: 4px 0 0;
@@ -415,21 +401,95 @@
 }
 
 
-/* 여성존 */
+/* 추천 동선 전체 */
+
+.visit-result-route-list {
+  display: flex;
+
+  align-items: center;
+
+  width: 100%;
+
+  margin-top: 10px;
+
+  /* 작은 모바일에서도 잘리지 않도록 */
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  -webkit-overflow-scrolling: touch;
+
+  scrollbar-width: none;
+}
+
+.visit-result-route-list::-webkit-scrollbar {
+  display: none;
+}
+
+
+/* 박스 + 화살표 묶음 */
+
+.visit-result-route-item {
+  display: flex;
+
+  align-items: center;
+
+  height: 29px;
+
+  flex-shrink: 0;
+}
+
+
+/* 추천 동선 네모 */
+
+.visit-result-route-box {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  height: 29px;
+
+  padding: 0 13px;
+
+  box-sizing: border-box;
+
+  border: 1px solid #ad7f44;
+
+  border-radius: 8px;
+
+  background: #fffaf4;
+
+  color: #704500;
+
+  font-family: inherit;
+
+  font-size: 13px;
+  font-weight: 500;
+
+  white-space: nowrap;
+
+  cursor: pointer;
+}
+
+
+/* 첫 번째 존 */
+
 .visit-result-route-item:nth-child(1)
 .visit-result-route-box {
   min-width: 82px;
 }
 
 
-/* 신상품존 */
+/* 두 번째 존 */
+
 .visit-result-route-item:nth-child(2)
 .visit-result-route-box {
   min-width: 82px;
 }
 
 
-/* 라이프스타일존 */
+/* 세 번째 존 */
+
 .visit-result-route-item:nth-child(3)
 .visit-result-route-box {
   min-width: 100px;
@@ -437,8 +497,10 @@
 
 
 /* 화살표 */
+
 .visit-result-route-arrow {
   display: flex;
+
   align-items: center;
   justify-content: center;
 
@@ -451,7 +513,6 @@
 
   font-size: 20px;
   font-weight: 400;
-
   line-height: 29px;
 
   flex-shrink: 0;
@@ -466,10 +527,14 @@
 
 .visit-result-products-section {
   margin-top: 0;
+
+  /* 마지막 상품 아래 여백 */
+  padding-bottom: 20px;
 }
 
 .visit-result-products-header {
   display: flex;
+
   align-items: flex-start;
   justify-content: space-between;
 }
@@ -489,6 +554,7 @@
 
 .visit-result-more-button {
   display: flex;
+
   align-items: center;
 
   flex-shrink: 0;
@@ -500,6 +566,7 @@
   padding: 0;
 
   border: none;
+
   background: transparent;
 
   color: #8b6937;
@@ -516,6 +583,7 @@
 
 .visit-result-product-list {
   display: flex;
+
   flex-direction: column;
 
   gap: 11px;
@@ -525,17 +593,19 @@
 
 .visit-result-product-card {
   display: flex;
+
   align-items: center;
   justify-content: space-between;
 
   width: 100%;
-  height: 66px;
+  min-height: 66px;
 
-  padding: 0 20px;
+  padding: 8px 20px;
 
   box-sizing: border-box;
 
   border: 1.2px solid #9b650b;
+
   border-radius: 9px;
 
   background: #fffaf5;
@@ -560,8 +630,12 @@
 
   color: #111;
 
-  font-size: 19px;
+  font-size: 15px;
   font-weight: 500;
+
+  line-height: 1.3;
+
+  word-break: keep-all;
 }
 
 
@@ -571,6 +645,7 @@
 
 .visit-result-star-button {
   display: flex;
+
   align-items: center;
   justify-content: center;
 
@@ -582,6 +657,7 @@
   padding: 0;
 
   border: none;
+
   background: transparent;
 
   cursor: pointer;
@@ -598,7 +674,28 @@
 
 
 /* =========================
+   LOADING / ERROR
+========================= */
+
+.visit-result-loading,
+.visit-result-error {
+  margin: 40px 0;
+
+  text-align: center;
+
+  color: #704500;
+
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+
+/* =========================
    BOTTOM NAV
+
+   VisitCardResult.jsx에서는
+   실제 BottomNav 컴포넌트를 사용하지만
+   기존 클래스도 유지
 ========================= */
 
 .visit-result-bottom-nav {
@@ -608,6 +705,7 @@
   bottom: 0;
 
   display: flex;
+
   align-items: center;
   justify-content: space-around;
 
@@ -623,6 +721,7 @@
 
 .visit-result-nav-item {
   display: flex;
+
   align-items: center;
   justify-content: center;
 
@@ -632,9 +731,27 @@
   padding: 0;
 
   border: none;
+
   background: transparent;
 
   color: #111;
 
   cursor: pointer;
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 393px) {
+  .visit-result-page {
+    max-width: 100%;
+  }
+
+  .visit-result-main {
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-bottom: 140px;
+  }
 }

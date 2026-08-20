@@ -5,7 +5,7 @@ import "../css/ManualStoreSelector.css";
 
 const REGION_FILTERS = ["전체", "서울", "경기", "부산", "대구"];
 
-const STORES = [
+const FALLBACK_STORES = [
   {
     id: 1,
     name: "MCM 신세계 강남점",
@@ -48,6 +48,9 @@ function ManualStoreSelector({
   updateVisitCardData,
   onBack,
   onNext,
+  stores = FALLBACK_STORES,
+  isSubmitting = false,
+  submitError = "",
 }) {
   const [searchKeyword, setSearchKeyword] = useState("");
   const [selectedRegion, setSelectedRegion] = useState("전체");
@@ -55,7 +58,7 @@ function ManualStoreSelector({
   const filteredStores = useMemo(() => {
     const normalizedKeyword = searchKeyword.trim().toLocaleLowerCase("ko-KR");
 
-    return STORES.filter((store) => {
+    return stores.filter((store) => {
       const matchesRegion =
         selectedRegion === "전체" || store.region === selectedRegion;
       const matchesKeyword = store.name
@@ -64,11 +67,12 @@ function ManualStoreSelector({
 
       return matchesRegion && matchesKeyword;
     });
-  }, [searchKeyword, selectedRegion]);
+  }, [searchKeyword, selectedRegion, stores]);
 
   const handleStoreSelect = (store) => {
     updateVisitCardData({
       region: store.fullRegion,
+      storeId: store.storeId ?? store.id,
       store: store.name,
       storeType: store.type,
     });
@@ -176,11 +180,17 @@ function ManualStoreSelector({
       <button
         type="button"
         className="manual-store-confirm"
-        disabled={!visitCardData.store}
+        disabled={!visitCardData.store || isSubmitting}
         onClick={handleConfirm}
       >
-        매장 선택하기
+        {isSubmitting ? "Visit Card 생성 중..." : "매장 선택하기"}
       </button>
+
+      {submitError && (
+        <p className="visit-submit-error" role="alert">
+          {submitError}
+        </p>
+      )}
     </div>
   );
 }
